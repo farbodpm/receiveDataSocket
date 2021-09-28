@@ -150,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .body(format!("name=%22farbod%22&lat={}&lang={}", datapack.fields_list[0].latitude
                     , datapack.fields_list[0].longitude))
                     .unwrap();
-
+                println!("response server : {:?}",request.body());
 
                 let serialized_user =
                     serde_json::to_string(&datapack).unwrap();
