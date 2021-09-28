@@ -7,7 +7,6 @@ use prost::Message;
 use std::fs::File;
 use std::io::prelude::*;
 use chrono::{Datelike, Timelike, Utc};
-use http::request::Request;
 
 include!("../protocols/messages.rs");
 pub const X25: Crc<u32> = Crc::<u32>::new(&CRC_32_ISCSI);
@@ -143,16 +142,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
                 let datapack = DataPointList::decode(
                     BytesMut::from(&packet.data[..])).unwrap();
-                if datapack.len() > 0 {
+                if datapack.fields_list.len() > 0 {
                     let res = reqwest::get(
                         format!("http://location.lagra.ir/addloc.php?name=farbod&lat={}&lang={}",
                                 datapack.fields_list[0].latitude
                                 , datapack.fields_list[0].longitude)).await;
 
-                    println!("Status: {}", res.status());
-                    let body = res.text().await;
+                    let body = res.unwrap().text().await;
 
-                    println!("Body:\n\n{}", body);
+                    println!("Body:\n\n{}", body.unwrap());
                 }
 
                 let serialized_user =
