@@ -143,15 +143,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
                 let datapack = DataPointList::decode(
                     BytesMut::from(&packet.data[..])).unwrap();
-                let res = reqwest::get(
-                    format!("http://location.lagra.ir/addloc.php?name=farbod&lat={}&lang={}"
-                            ,datapack.fields_list[0].latitude
-                            , datapack.fields_list[0].longitude)).await;
-
-                println!("Status: {}", res.status());
-                let body = res.text().await;
-
-                println!("Body:\n\n{}", body);
+                let request = Request::builder()
+                    .method("GET")
+                    .uri("http://location.lagra.ir/addloc.php")
+                    .header("X-Custom-Foo", "Bar")
+                    .body(format!("name=%22farbod%22&lat={}&lang={}", datapack.fields_list[0].latitude
+                    , datapack.fields_list[0].longitude))
+                    .unwrap();
 
 
                 let serialized_user =
