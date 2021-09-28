@@ -143,16 +143,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
                 let datapack = DataPointList::decode(
                     BytesMut::from(&packet.data[..])).unwrap();
-                let res = reqwest::get(
-                    format!("http://location.lagra.ir/addloc.php?name=farbod&lat={}&lang={}",
-                            datapack.fields_list[0].latitude
-                            , datapack.fields_list[0].longitude)).await;
+                if datapack.len() > 0 {
+                    let res = reqwest::get(
+                        format!("http://location.lagra.ir/addloc.php?name=farbod&lat={}&lang={}",
+                                datapack.fields_list[0].latitude
+                                , datapack.fields_list[0].longitude)).await;
 
-                println!("Status: {}", res.status());
-                let body = res.text().await;
+                    println!("Status: {}", res.status());
+                    let body = res.text().await;
 
-                println!("Body:\n\n{}", body);
-
+                    println!("Body:\n\n{}", body);
+                }
 
                 let serialized_user =
                     serde_json::to_string(&datapack).unwrap();
