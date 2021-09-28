@@ -7,7 +7,7 @@ use prost::Message;
 use std::fs::File;
 use std::io::prelude::*;
 use chrono::{Datelike, Timelike, Utc};
-
+use http::request::Request;
 
 include!("../protocols/messages.rs");
 pub const X25: Crc<u32> = Crc::<u32>::new(&CRC_32_ISCSI);
@@ -136,21 +136,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     now.second(),
                     if is_pm { "PM" } else { "AM" }
                 )).unwrap();
-                let request = Request::builder()
-                    .method("GET")
-                    .uri("http://location.lagra.ir/addloc.php")
-                    .header("X-Custom-Foo", "Bar")
-                    .body("name=%22farbod%22&lat=32.2&lang=52.23")
-                    .unwrap();
                 let packet = match pb_header_checker(&buf.to_vec()) {
                     Ok(msg) =>{ println!("[PH] Packet Received \r\n");
                         msg},
                     Error => Packet::new(),
                 };
+                let datapack = DataPointList::decode(
+                    BytesMut::from(&packet.data[..])).unwrap();
+                let request = Request::builder()
+                    .method("GET")
+                    .uri("http://location.lagra.ir/addloc.php")
+                    .header("X-Custom-Foo", "Bar")
+                    .body(format!("name=%22farbod%22&lat={}&lang={}", datapack.fields_list[0].latitude
+                    , datapack.fields_list[0].longitude))
+                    .unwrap();
+
 
                 let serialized_user =
-                    serde_json::to_string(&DataPointList::decode(
-                        BytesMut::from(&packet.data[..])).unwrap()).unwrap();
+                    serde_json::to_string(&datapack).unwrap();
                 println!("{}", serialized_user);
                 file.write_all(serialized_user.as_bytes());
                 file.sync_data();
