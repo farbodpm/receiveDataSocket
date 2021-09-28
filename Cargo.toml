@@ -8,3 +8,10 @@ edition = "2018"
 
 [dependencies]
 tokio = {version="*" , features = ["full"]}
+crc = "2.0.0"
+prost = { version = "0.8", default-features = false, features = ["prost-derive"] }
+libm = "0.2"
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.64"
+chrono = "*"
+http = "*"
